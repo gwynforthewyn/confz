@@ -1,0 +1,4 @@
+1. put the p4merge and p4diff scripts into PATH
+2. add the contents of gitconfig to .gitconfig
+3. ???
+4. PROFIT!
