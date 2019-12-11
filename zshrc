@@ -1,6 +1,6 @@
 
 function python() {
-  docker run -it python python "$@"
+  docker run -it  -v $(pwd):$(pwd) -w $(pwd) python python "$@"
 }
 
 function promptbranch() {
