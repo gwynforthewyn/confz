@@ -1,6 +1,9 @@
-
 function python() {
   docker run -it  -v $(pwd):$(pwd) -w $(pwd) python python "$@"
+}
+
+function gbranch() {
+  git rev-parse --abbrev-ref HEAD 2>/dev/null
 }
 
 function promptbranch() {
