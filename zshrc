@@ -1,4 +1,8 @@
 
+function python() {
+  docker run -it python python "$@"
+}
+
 function promptbranch() {
     if git rev-parse --is-inside-work-tree > /dev/null 2>&1
     then
