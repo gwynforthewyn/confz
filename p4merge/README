@@ -1,5 +1,5 @@
 1. Install p4merge from https://www.perforce.com/downloads (helix visual merge tool)
-2. put the p4merge and p4diff scripts into PATH
+2. put the p4merge into /usr/local/bin/ and p4diff script into PATH
 3. add the contents of gitconfig to .gitconfig
 4. ???
 5. PROFIT!
