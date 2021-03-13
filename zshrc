@@ -40,5 +40,6 @@ function precmd() {
 alias cds='cd /Users/jams/Source'
 alias cdp='cd /Users/jams/Developer'
 
+alias gdso='git diff --no-ext-diff'
 source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
 
