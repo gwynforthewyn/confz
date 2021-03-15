@@ -25,7 +25,8 @@ import re
 matcher = re.compile("^"+os.path.expanduser("~")+"\S")
 
 if (matcher.match(os.getcwd())):
-  print(os.getcwd().split(os.path.expanduser("~")+"/")[1]) 
+  current_dir_without_home = os.getcwd().split(os.path.expanduser("~")+"/")[1]
+  print(current_dir_without_home + "/") 
 else:
   print(os.getcwd())
 '
