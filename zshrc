@@ -2,6 +2,11 @@ export PATH=$PATH:$HOME/bin
 export EDITOR=vi
 export VISUAL=${EDITOR}
 
+# gx at the beginning is a lighter blue for directories
+# to contrast more with a black background
+# see https://geoff.greer.fm/lscolors/ for help
+export LSCOLORS=gxfxcxdxbxGxDxabagacad
+
 function gbranch() {
   git rev-parse --abbrev-ref HEAD 2>/dev/null
 }
