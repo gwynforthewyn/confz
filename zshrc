@@ -40,7 +40,7 @@ else:
 #http://zsh.sourceforge.net/Doc/Release/Functions.html#Special-Functions
 #precmd is a special function
 function precmd() {
-  PROMPT="$(getpwdname) $(promptbranch) $ "
+  PROMPT="$(getpwdname) %F{cyan}$(promptbranch)%f $ "
 }
 
 alias cds='cd /Users/jams/Source'
