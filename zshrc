@@ -43,6 +43,20 @@ function precmd() {
   PROMPT="$(getpwdname) %F{cyan}$(promptbranch)%f $ "
 }
 
+
+function grebase() {
+    mainBranch=$1
+
+    if [ -z "${mainBranch}" ]; then
+      mainBranch="main"
+    fi
+
+    git checkout ${mainBranch}
+    git fetch upstream --prune
+    git rebase --verbose upstream/${mainBranch}
+    git push origin ${mainBranch}
+}
+
 alias cds='cd /Users/jams/Source'
 alias cdp='cd /Users/jams/Developer'
 
