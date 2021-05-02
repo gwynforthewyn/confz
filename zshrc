@@ -7,6 +7,17 @@ export VISUAL=${EDITOR}
 # see https://geoff.greer.fm/lscolors/ for help
 export LSCOLORS=gxfxcxdxbxGxDxabagacad
 
+eval `ssh-agent -s`
+
+setopt INC_APPEND_HISTORY
+
+if type brew &>/dev/null; then
+  FPATH=$(brew --prefix)/share/zsh-completions:$FPATH
+
+  autoload -Uz compinit
+  compinit
+fi
+
 function gbranch() {
   git rev-parse --abbrev-ref HEAD 2>/dev/null
 }
@@ -31,7 +42,7 @@ matcher = re.compile("^"+os.path.expanduser("~")+"\S")
 
 if (matcher.match(os.getcwd())):
   current_dir_without_home = os.getcwd().split(os.path.expanduser("~")+"/")[1]
-  print(current_dir_without_home + "/") 
+  print(current_dir_without_home + "/")
 else:
   print(os.getcwd())
 '
@@ -42,7 +53,6 @@ else:
 function precmd() {
   PROMPT="$(getpwdname) %F{cyan}$(promptbranch)%f $ "
 }
-
 
 function grebase() {
     mainBranch=$1
@@ -57,10 +67,43 @@ function grebase() {
     git push origin ${mainBranch}
 }
 
-alias cds='cd /Users/jams/Source'
-alias cdp='cd /Users/jams/Developer'
+function gupdate() {
+    MAIN_BRANCH=$1
 
+    if [ -z "${MAIN_BRANCH}" ]; then
+      MAIN_BRANCH="main"
+    fi
+
+    CURRENT_BRANCH="$(gbranch)"
+
+    grebase
+    git checkout $CURRENT_BRANCH
+    git rebase $MAIN_BRANCH
+}
+
+
+alias cds='cd /Users/jams/Source'
+alias cdd='cd /Users/jams/Developer'
+alias gdc='git diff --cached'
 alias gdsc='git diff --sort=committerdate | tail -n 5'
 alias gdso='git diff --no-ext-diff'
-source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
+alias gdsoc='git diff --no-ext-diff --cached'
+alias gpo='git push origin'
 
+alias ssh-add='ssh-add -A'
+
+source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
+export PATH="$HOME/.rbenv/bin:$PATH"
+
+unalias mv
+unalias rm
+unalias history
+
+alias history="history 1"
+
+eval "$(rbenv init -)"
+export PYENV_ROOT="$HOME/.pyenv"
+export PATH="$PYENV_ROOT/bin:$PATH"
+if command -v pyenv 1>/dev/null 2>&1; then
+  eval "$(pyenv init -)"
+fi
