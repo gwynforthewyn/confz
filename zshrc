@@ -2,12 +2,16 @@ export PATH=$PATH:$HOME/bin
 export EDITOR=vi
 export VISUAL=${EDITOR}
 
+export DEV="${HOME}/Developer"
+export SOURCE="${HOME}/Source"
+
 # gx at the beginning is a lighter blue for directories
 # to contrast more with a black background
 # see https://geoff.greer.fm/lscolors/ for help
 export LSCOLORS=gxfxcxdxbxGxDxabagacad
 
 eval `ssh-agent -s`
+ssh-add -K > /dev/null
 
 setopt INC_APPEND_HISTORY
 
@@ -17,6 +21,12 @@ if type brew &>/dev/null; then
   autoload -Uz compinit
   compinit
 fi
+
+function cdd() {
+  DEST=$1
+
+  cd "${DEV}/${DEST}"
+} 
 
 function gbranch() {
   git rev-parse --abbrev-ref HEAD 2>/dev/null
@@ -82,8 +92,8 @@ function gupdate() {
 }
 
 
-alias cds='cd /Users/jams/Source'
-alias cdd='cd /Users/jams/Developer'
+alias cds='cd ${SOURCE}'
+
 alias gdc='git diff --cached'
 alias gdsc='git diff --sort=committerdate | tail -n 5'
 alias gdso='git diff --no-ext-diff'
