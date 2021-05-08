@@ -65,16 +65,16 @@ function precmd() {
 }
 
 function grebase() {
-    mainBranch=$1
+    MAIN_BRANCH=$1
 
-    if [ -z "${mainBranch}" ]; then
-      mainBranch="main"
+    if [ -z "${MAIN_BRANCH}" ]; then
+      MAIN_BRANCH="main"
     fi
 
-    git checkout ${mainBranch}
+    git checkout ${MAIN_BRANCH}
     git fetch upstream --prune
-    git rebase --verbose upstream/${mainBranch}
-    git push origin ${mainBranch}
+    git rebase --verbose upstream/${MAIN_BRANCH}
+    git push origin ${MAIN_BRANCH}
 }
 
 function gupdate() {
@@ -86,7 +86,7 @@ function gupdate() {
 
     CURRENT_BRANCH="$(gbranch)"
 
-    grebase
+    grebase ${MAIN_BRANCH}
     git checkout $CURRENT_BRANCH
     git rebase $MAIN_BRANCH
 }
