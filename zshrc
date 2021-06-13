@@ -10,8 +10,8 @@ export SOURCE="${HOME}/Source"
 # see https://geoff.greer.fm/lscolors/ for help
 export LSCOLORS=gxfxcxdxbxGxDxabagacad
 
-eval `ssh-agent -s`
-ssh-add -K > /dev/null
+eval "$(ssh-agent -s)" > /dev/null
+ssh-add -K > /dev/null 2>&1
 
 setopt INC_APPEND_HISTORY
 
@@ -25,8 +25,23 @@ fi
 function cdd() {
   DEST=$1
 
-  cd "${DEV}/${DEST}"
-} 
+  cd "${DEV}/${DEST}" || exit
+}
+
+def activatepypath() {
+  declare -a VALID_VENV_PATHS
+  VALID_VENV_PATHS=(
+    "./.venv/bin/activate"
+    "./venv/bin/activate"
+  )
+
+  for PATH in "${VALID_VENV_PATHS[@]}"; do
+    if [[ -f "${PATH}" ]]; then
+      source "${PATH}" && echo "🐍 "
+      return 0
+    fi
+  done
+}
 
 function gbranch() {
   git rev-parse --abbrev-ref HEAD 2>/dev/null
@@ -61,7 +76,7 @@ else:
 #http://zsh.sourceforge.net/Doc/Release/Functions.html#Special-Functions
 #precmd is a special function
 function precmd() {
-  PROMPT="$(getpwdname) %F{cyan}$(promptbranch)%f $ "
+  PROMPT="$(getpwdname) %F{cyan}$(promptbranch)%f $(activatepypath) $ "
 }
 
 function grebase() {
