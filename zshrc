@@ -80,16 +80,18 @@ function precmd() {
 }
 
 function grebase() {
-    MAIN_BRANCH=$1
+  MAIN_BRANCH="main"
+    
+  testForBranch=$(git branch | grep -E "\s${mainBranch}$")
 
-    if [ -z "${MAIN_BRANCH}" ]; then
-      MAIN_BRANCH="main"
-    fi
+  if [ -z "${testForBranch}" ]; then
+    mainBranch="master"
+  fi
 
-    git checkout ${MAIN_BRANCH}
-    git fetch upstream --prune
-    git rebase --verbose upstream/${MAIN_BRANCH}
-    git push origin ${MAIN_BRANCH}
+  git checkout ${mainBranch}
+  git fetch upstream --prune
+  git rebase --verbose upstream/${mainBranch}
+  git push origin ${mainBranch}
 }
 
 function gupdate() {
