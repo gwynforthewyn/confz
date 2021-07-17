@@ -30,18 +30,23 @@ function cdd() {
 
 def activatepypath() {
   declare -a VALID_VENV_PATHS
+
+  if [[ -n "${VIRTUAL_ENV}" ]]; then
+    deactivate
+  fi
+
   VALID_VENV_PATHS=(
-    "./.venv/bin/activate"
-    "./venv/bin/activate"
+    ".venv/bin/activate"
+    "venv/bin/activate"
   )
 
-  for PATH in "${VALID_VENV_PATHS[@]}"; do
-    if [[ -f "${PATH}" ]]; then
-      source "${PATH}" && echo "🐍 "
-      return 0
+  for POTENTIAL_PATH in "${VALID_VENV_PATHS[@]}"; do
+    if [[ -f "${POTENTIAL_PATH}" ]]; then
+      source "${POTENTIAL_PATH}"
     fi
   done
 }
+
 
 function gbranch() {
   git rev-parse --abbrev-ref HEAD 2>/dev/null
@@ -71,12 +76,6 @@ if (matcher.match(os.getcwd())):
 else:
   print(os.getcwd())
 '
-}
-
-#http://zsh.sourceforge.net/Doc/Release/Functions.html#Special-Functions
-#precmd is a special function
-function precmd() {
-  PROMPT="$(getpwdname) %F{cyan}$(promptbranch)%f $(activatepypath) $ "
 }
 
 function grebase() {
@@ -134,3 +133,21 @@ export PATH="$PYENV_ROOT/bin:$PATH"
 if command -v pyenv 1>/dev/null 2>&1; then
   eval "$(pyenv init -)"
 fi
+
+#http://zsh.sourceforge.net/Doc/Release/Functions.html#Special-Functions
+#chpwd is a special function
+function chpwd() {
+  activatepypath
+}
+
+#http://zsh.sourceforge.net/Doc/Release/Functions.html#Special-Functions
+#precmd is a special function
+function precmd() {
+  LIL_PYTHON=""
+
+  if [[ -n "${VIRTUAL_ENV}" ]]; then
+    LIL_PYTHON=" 🐍"
+  fi
+
+  PROMPT="$(getpwdname) %F{cyan}$(promptbranch)%f${LIL_PYTHON} $ "
+}
