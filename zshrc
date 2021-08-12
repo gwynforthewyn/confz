@@ -1,3 +1,5 @@
+setopt prompt_subst
+
 export PATH=$PATH:$HOME/bin
 export EDITOR=vi
 export VISUAL=${EDITOR}
@@ -64,23 +66,20 @@ function promptbranch() {
 # In home directory subdirs, strip the path to home dir.
 # Otherwise, print the whole path
 function getpwdname() {
-python -c '
-import os
-import re
+  case $PWD in
+  ($HOME/*)
+      echo ${PWD#$HOME/}
+      ;;
+  (*)
+      echo ${PWD}
+      ;;
+  esac
 
-matcher = re.compile("^"+os.path.expanduser("~")+"\S")
-
-if (matcher.match(os.getcwd())):
-  current_dir_without_home = os.getcwd().split(os.path.expanduser("~")+"/")[1]
-  print(current_dir_without_home + "/")
-else:
-  print(os.getcwd())
-'
 }
 
 function grebase() {
   MAIN_BRANCH="main"
-    
+
   testForBranch=$(git branch | grep -E "\s${mainBranch}$")
 
   if [ -z "${testForBranch}" ]; then
@@ -118,12 +117,8 @@ alias gpo='git push origin'
 
 alias ssh-add='ssh-add -A'
 
-source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
 export PATH="$HOME/.rbenv/bin:$PATH"
 
-unalias mv
-unalias rm
-unalias history
 
 alias history="history 1"
 
@@ -134,20 +129,13 @@ if command -v pyenv 1>/dev/null 2>&1; then
   eval "$(pyenv init -)"
 fi
 
-#http://zsh.sourceforge.net/Doc/Release/Functions.html#Special-Functions
-#chpwd is a special function
-function chpwd() {
-  activatepypath
+# #http://zsh.sourceforge.net/Doc/Release/Functions.html#Special-Functions
+# #chpwd is a special function
+chpwd_functions+=(activatepypath)
+
+function giveYouAPython() {
+    [[ -n "$VIRTUAL_ENV" ]] && echo  " 🐍"
 }
 
-#http://zsh.sourceforge.net/Doc/Release/Functions.html#Special-Functions
-#precmd is a special function
-function precmd() {
-  LIL_PYTHON=""
-
-  if [[ -n "${VIRTUAL_ENV}" ]]; then
-    LIL_PYTHON=" 🐍"
-  fi
-
-  PROMPT="$(getpwdname) %F{cyan}$(promptbranch)%f${LIL_PYTHON} $ "
-}
+PROMPT="\$(activatepypath)\$(getpwdname) %F{cyan}\$(promptbranch)%f\$(giveYouAPython) $ "
+export VIRTUAL_ENV_DISABLE_PROMPT=1
