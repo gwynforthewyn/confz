@@ -33,22 +33,35 @@ function cdd() {
 def activatepypath() {
   declare -a VALID_VENV_PATHS
 
-  if [[ -n "${VIRTUAL_ENV}" ]]; then
-    deactivate
+  if [[ ${VIRTUAL_ENV} ]]; then
+    # VIRTUAL_ENV for a project in /foo/bar contains /foo/bar/venv
+    VIRTUAL_ENV_DIR=$(dirname ${VIRTUAL_ENV})
+
+    if [[ "${PWD}" != ${VIRTUAL_ENV_DIR}*  ]]; then
+      deactivate
+    fi
   fi
 
-  VALID_VENV_PATHS=(
-    ".venv/bin/activate"
-    "venv/bin/activate"
-  )
+  PRESENT_SEARCH=${PWD}
 
-  for POTENTIAL_PATH in "${VALID_VENV_PATHS[@]}"; do
-    if [[ -f "${POTENTIAL_PATH}" ]]; then
-      source "${POTENTIAL_PATH}"
-    fi
+  while [[ ${PRESENT_SEARCH} != "/" ]]
+  do
+    VALID_VENV_PATHS=(
+      "${PRESENT_SEARCH}/.venv/bin/activate"
+      "${PRESENT_SEARCH}/venv/bin/activate"
+      "${PRESENT_SEARCH}/virtualenv/bin/activate"
+    )
+
+    for POTENTIAL_PATH in "${VALID_VENV_PATHS[@]}"; do
+      if [[ -f "${POTENTIAL_PATH}" ]]; then
+        source "${POTENTIAL_PATH}"
+        return 0
+      fi
+    done
+
+    PRESENT_SEARCH=$(dirname ${PRESENT_SEARCH})
   done
 }
-
 
 function gbranch() {
   git rev-parse --abbrev-ref HEAD 2>/dev/null
