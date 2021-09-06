@@ -67,15 +67,6 @@ function gbranch() {
   git rev-parse --abbrev-ref HEAD 2>/dev/null
 }
 
-function promptbranch() {
-    if git rev-parse --is-inside-work-tree > /dev/null 2>&1
-    then
-      gbranch
-    else
-      echo ""
-    fi
-}
-
 # In home directory subdirs, strip the path to home dir.
 # Otherwise, print the whole path
 function getpwdname() {
@@ -119,6 +110,20 @@ function gupdate() {
     git rebase $MAIN_BRANCH
 }
 
+function promptbranch() {
+    if git rev-parse --is-inside-work-tree > /dev/null 2>&1
+    then
+      gbranch
+    else
+      echo ""
+    fi
+}
+
+function pycharm() {
+  DIR=${1:-"."}
+
+  open -na "/Applications/PyCharm CE.app/"  --args "${DIR}"
+}
 
 alias cds='cd ${SOURCE}'
 
