@@ -10,6 +10,7 @@ export VISUAL=${EDITOR}
 export DEV="${HOME}/Developer"
 export SOURCE="${HOME}/Source"
 
+export DO_YOU_A_RPROMPT_STATEFILE="${HOME}/.former_working_dir"
 
 HISTFILE=~/.zsh_history
 HISTSIZE=10000
@@ -174,16 +175,43 @@ alias history="history 1"
 export PATH="$HOME/.rbenv/bin:$PATH"
 eval "$(rbenv init -)"
 
-# #http://zsh.sourceforge.net/Doc/Release/Functions.html#Special-Functions
-# #chpwd is a special function
-chpwd_functions+=(activatepypath)
 
 function giveYouAPython() {
     [[ -n "$VIRTUAL_ENV" ]] && echo  " 🐍 "
 }
 
+
+function doYouARPrompt() {
+  if [[ ! -f "${DO_YOU_A_RPROMPT_STATEFILE}" ]]; then
+    echo "%F{cyan}$(getpwdname)%f$(activatepypath)$(giveYouAPython)"
+  else
+    if [[ "$(cat ${DO_YOU_A_RPROMPT_STATEFILE})" != "${PWD}" ]]; then
+      echo "%F{cyan}$(getpwdname)%f$(activatepypath)$(giveYouAPython)"
+    else
+      echo ' '
+    fi
+  fi
+
+  echo -e "${PWD}" > "${DO_YOU_A_RPROMPT_STATEFILE}"
+}
+
+function cleanWorkingDirFile() {
+  rm $DO_YOU_A_RPROMPT_STATEFILE
+}
+
+# #http://zsh.sourceforge.net/Doc/Release/Functions.html#Special-Functions
+# #chpwd is a special function
+chpwd_functions+=(activatepypath
+                  )
+
+prcmd_functions+=(setSentinel
+                 )
+
+zshexit_functions+=(cleanWorkingDirFile)
+
+RPROMPT="\$(doYouARPrompt)"
 PROMPT="; "
-RPROMPT="%F{cyan}\$(getpwdname)%f\$(activatepypath)\$(giveYouAPython)"
+
 
 export VIRTUAL_ENV_DISABLE_PROMPT=1
 
