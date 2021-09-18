@@ -1,11 +1,25 @@
+# zmodload zsh/zprof
+
 setopt prompt_subst
 
 export PATH=$PATH:$HOME/bin
+export PATH=$HOME/.python/Python-3.9.6/usr/local/bin:$PATH
 export EDITOR=vi
 export VISUAL=${EDITOR}
 
 export DEV="${HOME}/Developer"
 export SOURCE="${HOME}/Source"
+
+
+HISTFILE=~/.zsh_history
+HISTSIZE=10000
+SAVEHIST=1000
+setopt SHARE_HISTORY
+
+# From https://docs.docker.com/engine/reference/commandline/cli/
+# this hides the old style "docker stop" commands and forces me to
+# use e.g. "docker container stop" and not be a legacy doofus
+export DOCKER_HIDE_LEGACY_COMMANDS=1
 
 # gx at the beginning is a lighter blue for directories
 # to contrast more with a black background
@@ -15,19 +29,21 @@ export LSCOLORS=gxfxcxdxbxGxDxabagacad
 eval "$(ssh-agent -s)" > /dev/null
 ssh-add -K > /dev/null 2>&1
 
-setopt INC_APPEND_HISTORY
-
 if type brew &>/dev/null; then
-  FPATH=$(brew --prefix)/share/zsh-completions:$FPATH
+  FPATH=/usr/local/share/zsh-completions:$FPATH
 
   autoload -Uz compinit
   compinit
 fi
 
+function bashdebug() {
+  echo "trap '(read -p "[$BASH_SOURCE:$LINENO] $BASH_COMMAND")' DEBUG"
+}
+
 function cdd() {
   DEST=$1
 
-  cd "${DEV}/${DEST}" || exit
+  cd "${DEV}/${DEST}"
 }
 
 def activatepypath() {
@@ -63,8 +79,25 @@ def activatepypath() {
   done
 }
 
+
+function clion() {
+  DIR=${1:-"."}
+
+  open -na "/Applications/CLion.app/"  --args "${DIR}"
+}
+
+
 function gbranch() {
   git rev-parse --abbrev-ref HEAD 2>/dev/null
+}
+
+function promptbranch() {
+    if git rev-parse --is-inside-work-tree > /dev/null 2>&1
+    then
+      gbranch
+    else
+      echo ""
+    fi
 }
 
 # In home directory subdirs, strip the path to home dir.
@@ -110,13 +143,10 @@ function gupdate() {
     git rebase $MAIN_BRANCH
 }
 
-function promptbranch() {
-    if git rev-parse --is-inside-work-tree > /dev/null 2>&1
-    then
-      gbranch
-    else
-      echo ""
-    fi
+function idea() {
+  DIR=${1:-"."}
+
+  open -na "/Applications/Intellij Idea CE.app/"  --args "${DIR}"
 }
 
 function pycharm() {
@@ -125,35 +155,47 @@ function pycharm() {
   open -na "/Applications/PyCharm CE.app/"  --args "${DIR}"
 }
 
-alias cds='cd ${SOURCE}'
 
+alias cds='cd ${SOURCE}'
+alias subl="subl -n"
 alias gdc='git diff --cached'
 alias gdsc='git diff --sort=committerdate | tail -n 5'
 alias gdso='git diff --no-ext-diff'
 alias gdsoc='git diff --no-ext-diff --cached'
 alias gpo='git push origin'
 
+alias python="python3"
 alias ssh-add='ssh-add -A'
 
-export PATH="$HOME/.rbenv/bin:$PATH"
-
+alias zish="subl -n ${HOME}/.zshrc"
 
 alias history="history 1"
 
+export PATH="$HOME/.rbenv/bin:$PATH"
 eval "$(rbenv init -)"
-export PYENV_ROOT="$HOME/.pyenv"
-export PATH="$PYENV_ROOT/bin:$PATH"
-if command -v pyenv 1>/dev/null 2>&1; then
-  eval "$(pyenv init -)"
-fi
 
 # #http://zsh.sourceforge.net/Doc/Release/Functions.html#Special-Functions
 # #chpwd is a special function
 chpwd_functions+=(activatepypath)
 
 function giveYouAPython() {
-    [[ -n "$VIRTUAL_ENV" ]] && echo  " 🐍"
+    [[ -n "$VIRTUAL_ENV" ]] && echo  " 🐍 "
 }
 
-PROMPT="\$(activatepypath)\$(getpwdname) %F{cyan}\$(promptbranch)%f\$(giveYouAPython) $ "
+PROMPT="; "
+RPROMPT="%F{cyan}\$(getpwdname)%f\$(activatepypath)\$(giveYouAPython)"
+
 export VIRTUAL_ENV_DISABLE_PROMPT=1
+
+# # For building python3 with ssl support
+# The correct openssl path is discoverable by this homebrew command
+# OPENSSL_PATH=$(brew --prefix openssl)
+OPENSSL_PATH="/usr/local/opt/openssl@1.1"
+export LDFLAGS="-L${OPENSSL_PATH}/lib"
+export CPPFLAGS="-I${OPENSSL_PATH}/include/openssl"
+export CFLAGS="-I${OPENSSL_PATH}/include/openssl"
+export PATH="${OPENSSL_PATH}/bin:$PATH"
+
+export PATH="$PATH:/Users/jams/Library/Python/3.9/bin"
+
+# zprof
