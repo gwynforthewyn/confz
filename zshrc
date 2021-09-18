@@ -10,7 +10,7 @@ export VISUAL=${EDITOR}
 export DEV="${HOME}/Developer"
 export SOURCE="${HOME}/Source"
 
-export DO_YOU_A_RPROMPT_STATEFILE="${HOME}/.former_working_dir"
+export DO_YOU_A_RPROMPT_STATEFILE="${HOME}/.former_working_dir-${$}"
 
 HISTFILE=~/.zsh_history
 HISTSIZE=10000
@@ -195,7 +195,7 @@ function doYouARPrompt() {
   echo -e "${PWD}" > "${DO_YOU_A_RPROMPT_STATEFILE}"
 }
 
-function cleanWorkingDirFile() {
+function cleanDoYouARPromptStatefile() {
   rm $DO_YOU_A_RPROMPT_STATEFILE
 }
 
@@ -204,10 +204,8 @@ function cleanWorkingDirFile() {
 chpwd_functions+=(activatepypath
                   )
 
-prcmd_functions+=(setSentinel
-                 )
-
-zshexit_functions+=(cleanWorkingDirFile)
+# Ensure that the rprompt statefile  is removed at the end of each shell session.
+zshexit_functions+=(cleanDoYouARPromptStatefile)
 
 RPROMPT="\$(doYouARPrompt)"
 PROMPT="; "
