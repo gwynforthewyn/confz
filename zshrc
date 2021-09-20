@@ -10,12 +10,12 @@ export VISUAL=${EDITOR}
 export DEV="${HOME}/Developer"
 export SOURCE="${HOME}/Source"
 
-export DO_YOU_A_RPROMPT_STATEFILE="${HOME}/.former_working_dir-${$}"
-
-HISTFILE=~/.zsh_history
+#Share history across multiple terminals.
+setopt share_history
+HISTFILE="${HOME}/.zsh_history"
 HISTSIZE=10000
 SAVEHIST=1000
-setopt SHARE_HISTORY
+set +o inc_append_history # Apparently this should be off if share_history is turned on
 
 # From https://docs.docker.com/engine/reference/commandline/cli/
 # this hides the old style "docker stop" commands and forces me to
@@ -181,6 +181,7 @@ function giveYouAPython() {
 }
 
 
+export DO_YOU_A_RPROMPT_STATEFILE="${HOME}/.former_working_dir-${$}"
 function doYouARPrompt() {
   if [[ ! -f "${DO_YOU_A_RPROMPT_STATEFILE}" ]]; then
     echo "%F{cyan}$(getpwdname)%f$(activatepypath)$(giveYouAPython)"
