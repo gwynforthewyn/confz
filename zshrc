@@ -87,6 +87,11 @@ function clion() {
   open -na "/Applications/CLion.app/"  --args "${DIR}"
 }
 
+function dockerlogs() {
+  pred='process matches ".*(ocker|vpnkit).*" || (process in {"taskgated-helper", "launchservicesd", "kernel"} && eventMessage contains[c] "docker")'
+  /usr/bin/log show --debug --info --style syslog --last 1d --predicate "$pred"
+}
+
 
 function gbranch() {
   git rev-parse --abbrev-ref HEAD 2>/dev/null
@@ -116,7 +121,7 @@ function getpwdname() {
 }
 
 function grebase() {
-  MAIN_BRANCH="main"
+  mainBranch="main"
 
   testForBranch=$(git branch | grep -E "\s${mainBranch}$")
 
@@ -125,7 +130,7 @@ function grebase() {
   fi
 
   git checkout ${mainBranch}
-  git fetch upstream --prune
+  git fetch --all --prune
   git rebase --verbose upstream/${mainBranch}
   git push origin ${mainBranch}
 }

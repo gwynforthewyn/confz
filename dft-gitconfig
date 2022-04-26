@@ -1,0 +1,27 @@
+[merge]
+    tool = p4merge
+    keepBackup = false
+[mergetool "p4merge"]
+    cmd = p4merge "$BASE" "$LOCAL" "$REMOTE" "$MERGED"
+    keepTemporaries = false
+    trustExitCode = false
+    keepBackup = false
+[diff]
+        tool = difftastic
+
+[difftool]
+        prompt = false
+
+[difftool "difftastic"]
+        cmd = difft "$LOCAL" "$REMOTE"
+[init]
+	defaultBranch = main
+[user]
+	name = Gwyn
+	email = gwyn@playtechnique.io
+[push]
+	default = current
+[pull]
+    rebase = true
+[checkout]
+	defaultRemote = origin
