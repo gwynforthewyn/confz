@@ -15,3 +15,5 @@
 	default = current
 [pull]
 	rebase = true
+[checkout]
+	defaultRemote = origin
