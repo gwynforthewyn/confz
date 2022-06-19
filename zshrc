@@ -1,21 +1,29 @@
 # zmodload zsh/zprof
+source ${HOME}/.zshrc_machine_specific
 
 setopt prompt_subst
 
-export PATH=$PATH:$HOME/bin
-export PATH=$HOME/.python/Python-3.9.6/usr/local/bin:$PATH
+export PATH=/usr/local/bin:$PATH:$HOME/bin
 export EDITOR=vi
 export VISUAL=${EDITOR}
 
+export GROOVY_HOME=/usr/local/opt/groovy/libexec
+
 export DEV="${HOME}/Developer"
+export GOPATH="${HOME}/Developer/go"
+export PATH=$PATH:${GOPATH}/bin
 export SOURCE="${HOME}/Source"
 
 #Share history across multiple terminals.
 setopt share_history
 HISTFILE="${HOME}/.zsh_history"
-HISTSIZE=10000
-SAVEHIST=1000
+HISTSIZE=100000000
+SAVEHIST=100000000
 set +o inc_append_history # Apparently this should be off if share_history is turned on
+
+set -o emacs
+
+export PATH="/Applications/Sublime Text.app/Contents/SharedSupport/bin:$PATH"
 
 # From https://docs.docker.com/engine/reference/commandline/cli/
 # this hides the old style "docker stop" commands and forces me to
@@ -28,7 +36,13 @@ export DOCKER_HIDE_LEGACY_COMMANDS=1
 export LSCOLORS=gxfxcxdxbxGxDxabagacad
 
 eval "$(ssh-agent -s)" > /dev/null
-ssh-add -K > /dev/null 2>&1
+if [[ $(uname -a | grep Darwin) ]]; then
+  export APPLE_SSH_ADD_BEHAVIOR=macos
+  ssh-add --apple-load-keychain > /dev/null 2>&1
+else
+  # Assume we're on linux
+  ssh-add -K > /dev/null 2>&1
+fi
 
 if type brew &>/dev/null; then
   FPATH=/usr/local/share/zsh-completions:$FPATH
@@ -45,6 +59,12 @@ function cdd() {
   DEST=$1
 
   cd "${DEV}/${DEST}"
+}
+
+function cds() {
+  DEST=$1
+
+  cd "${SOURCE}/${DEST}"
 }
 
 def activatepypath() {
@@ -80,18 +100,9 @@ def activatepypath() {
   done
 }
 
-
-function clion() {
-  DIR=${1:-"."}
-
-  open -na "/Applications/CLion.app/"  --args "${DIR}"
-}
-
 function dockerlogs() {
-  pred='process matches ".*(ocker|vpnkit).*" || (process in {"taskgated-helper", "launchservicesd", "kernel"} && eventMessage contains[c] "docker")'
-  /usr/bin/log show --debug --info --style syslog --last 1d --predicate "$pred"
+  tail -f ~/Library/Containers/com.docker.docker/Data/log/vm/dockerd.log
 }
-
 
 function gbranch() {
   git rev-parse --abbrev-ref HEAD 2>/dev/null
@@ -123,7 +134,7 @@ function getpwdname() {
 function grebase() {
   mainBranch="main"
 
-  testForBranch=$(git branch | grep -E "\s${mainBranch}$")
+  testForBranch=$(grep rev-parse "${mainBranch}")
 
   if [ -z "${testForBranch}" ]; then
     mainBranch="master"
@@ -149,18 +160,40 @@ function gupdate() {
     git rebase $MAIN_BRANCH
 }
 
+function clion() {
+  DIR=${1:-"."} 
+  open -na "/Applications/CLion.app/" --args "${DIR}"
+}
+
+function goland() {
+  DIR=${1:-"."} 
+  open -na "/Applications/GoLand.app/" --args "${DIR}"
+}
+
 function idea() {
   DIR=${1:-"."}
 
-  open -na "/Applications/Intellij Idea CE.app/"  --args "${DIR}"
+  open -na "/Applications/Intellij Idea.app/"  --args "${DIR}"
 }
 
 function pycharm() {
   DIR=${1:-"."}
 
-  open -na "/Applications/PyCharm CE.app/"  --args "${DIR}"
+  open -na "/Applications/PyCharm.app/"  --args "${DIR}"
 }
 
+function wireshark() {
+  FILE=${1}
+
+  if [[ -z "$FILE" ]]; then
+    echo "usage: wireshark path/to/file.pcap"
+    exit 1
+  fi
+
+  FILE="$(pwd)/${FILE}"
+
+  open -na "/Applications/Wireshark.app/" --args "${FILE}"
+}
 
 alias cds='cd ${SOURCE}'
 alias subl="subl -n"
@@ -171,14 +204,10 @@ alias gdsoc='git diff --no-ext-diff --cached'
 alias gpo='git push origin'
 
 alias python="python3"
-alias ssh-add='ssh-add -A'
 
 alias zish="subl -n ${HOME}/.zshrc"
 
 alias history="history 1"
-
-export PATH="$HOME/.rbenv/bin:$PATH"
-eval "$(rbenv init -)"
 
 
 function giveYouAPython() {
@@ -205,6 +234,14 @@ function cleanDoYouARPromptStatefile() {
   rm $DO_YOU_A_RPROMPT_STATEFILE
 }
 
+function ssh() {
+    if [[ "$1" = "lnx" || "$1" = "plnx" || "$1" == "Hew" ]]; then
+      TERM=xterm /usr/bin/ssh $@
+    else
+      /usr/bin/ssh $@
+    fi
+}
+
 # #http://zsh.sourceforge.net/Doc/Release/Functions.html#Special-Functions
 # #chpwd is a special function
 chpwd_functions+=(activatepypath
@@ -227,7 +264,5 @@ export LDFLAGS="-L${OPENSSL_PATH}/lib"
 export CPPFLAGS="-I${OPENSSL_PATH}/include/openssl"
 export CFLAGS="-I${OPENSSL_PATH}/include/openssl"
 export PATH="${OPENSSL_PATH}/bin:$PATH"
-
-export PATH="$PATH:/Users/jams/Library/Python/3.9/bin"
 
 # zprof
