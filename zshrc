@@ -1,5 +1,7 @@
 # zmodload zsh/zprof
-source ${HOME}/.zshrc_machine_specific
+if [[ -f ${HOME}/.zshrc_machine_specific ]]; then
+  source ${HOME}/.zshrc_machine_specific
+fi
 
 setopt prompt_subst
 
