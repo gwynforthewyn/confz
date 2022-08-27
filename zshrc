@@ -145,7 +145,6 @@ function grebase() {
   git checkout ${mainBranch}
   git fetch --all --prune
   git rebase --verbose upstream/${mainBranch}
-  git push origin ${mainBranch}
 }
 
 function gupdate() {
