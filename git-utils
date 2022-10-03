@@ -1,0 +1,78 @@
+
+# Functionality:
+# This function accepts a string of the form `repo:branch`
+# it adds the user's github repository as remote `repo` in your local git repository, fetches the branch and checks it 
+# out to a branch named user-branch locally. 
+# It adds the remote correctly such that a git pull will work correctly to pull from the upstream fork for that branch.
+#
+# Dependencies:
+# 1. 'rev' binary. I verified this exists on macOS and Ubuntu in the default userlands.
+# 2. git, I guess.
+#
+# Params:
+# 1. A string of the form repo:branch
+# 2. You can set your own GITHUB_URL in your environment. By default this is https://github.com, but I'm not a cop.
+#    This is the URL used to figure out what remote to add and pull from.
+function gcheckout {
+  GH_STRING="${1}"
+
+  GITHUB_URL="${GITHUB_URL:=https://github.com}"
+  
+  # To add a new remote, we need a string of the format
+  # https://${GITHUB_URL}/REMOTE_NAMESPACE/reponame.git
+    
+  # Given a string namespace:branch
+  # Remove everything after the colon, inclusive
+  REMOTE_NAMESPACE=${GH_STRING/:*/}
+  # Remove everything before the colon, inclusive
+  REMOTE_BRANCH=${GH_STRING/*:/}
+  
+  if [[ -z "${REMOTE_NAMESPACE}" ]] || [[ -z "${REMOTE_BRANCH}" ]]; then
+    echo "Having trouble parsing <${GH_STRING}>. Is it in the format you can copy/paste from github?" 2>&1
+    return 1
+  fi
+  
+  if ! git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
+    echo "Not in a git repository, sorry. Bailing!" >&2
+    return 2
+  fi
+  
+  ORIGIN=$(git config --get remote.origin.url)
+  
+  if [[ -z "${ORIGIN}" ]]; then
+    echo "Cannot find origin URL from command 'git config --get remote.origin.url'. gh-checkout requires origin to be set."
+    return 1
+  fi
+  
+  # Given either of these in ORIGIN:
+  # https://github.com/gwynforthewyn/confz.git
+  # git@github.com:gwynforthewyn/confz.git
+  # I want to find confz.git
+  # It's easier if the string is reversed
+  revORIGIN="$(echo ${ORIGIN} | rev)"
+  
+  # Remove everything after the first /, inclusive, leaving only 'tig.zfnoc'
+  revGIT_REPO=${revORIGIN/\/*/}
+  
+  # Put 'tig.zfnoc' back to  'confz.git'
+  origin_reponame="$(echo ${revGIT_REPO} | rev)"
+  
+  REMOTE_URL="${GITHUB_URL}/${REMOTE_NAMESPACE}/${origin_reponame}"
+  git remote add "${REMOTE_NAMESPACE}" "${REMOTE_URL}" > /dev/null 2>&1
+  EXIT_VAL=$?
+
+  # Exit value 3 means this remote already exists, which is fine.
+  if [[ ${EXIT_VAL} -ne 3 ]] && [[ ${EXIT_VAL} -ne 0 ]] ; then
+    echo "Something went wrong adding ${REMOTE_URL} as ${REMOTE_NAMESPACE}. Please fix and file a PR" >&2
+    exit ${EXIT_VAL}
+  fi
+
+  LOCAL_BRANCH="${REMOTE_NAMESPACE}-${REMOTE_BRANCH}"
+
+  git checkout -B ${LOCAL_BRANCH} --track ${REMOTE_NAMESPACE}/${REMOTE_BRANCH} 2>&1
+  
+  if [[ $? -ne 0]]; then
+    echo "Something went wrong! Report a bug or open a pr with a fix, please." 2>&1
+    return 3
+  fi
+}
