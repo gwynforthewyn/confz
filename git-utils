@@ -71,7 +71,7 @@ function gcheckout {
 
   git checkout -B ${LOCAL_BRANCH} --track ${REMOTE_NAMESPACE}/${REMOTE_BRANCH} 2>&1
   
-  if [[ $? -ne 0]]; then
+  if [[ $? -ne 0 ]]; then
     echo "Something went wrong! Report a bug or open a pr with a fix, please." 2>&1
     return 3
   fi
