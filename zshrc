@@ -1,7 +1,6 @@
 # zmodload zsh/zprof
-if [[ -f ${HOME}/.zshrc_machine_specific ]]; then
-  source ${HOME}/.zshrc_machine_specific
-fi
+source ${HOME/.zshrc_env_vars}
+source ${HOME}/.zshrc_machine_specific
 
 setopt prompt_subst
 
@@ -133,34 +132,6 @@ function getpwdname() {
 
 }
 
-function grebase() {
-  mainBranch="main"
-
-  testForBranch=$(grep rev-parse "${mainBranch}")
-
-  if [ -z "${testForBranch}" ]; then
-    mainBranch="master"
-  fi
-
-  git checkout ${mainBranch}
-  git fetch --all --prune
-  git rebase --verbose upstream/${mainBranch}
-}
-
-function gupdate() {
-    MAIN_BRANCH=$1
-
-    if [ -z "${MAIN_BRANCH}" ]; then
-      MAIN_BRANCH="main"
-    fi
-
-    CURRENT_BRANCH="$(gbranch)"
-
-    grebase ${MAIN_BRANCH}
-    git checkout $CURRENT_BRANCH
-    git rebase $MAIN_BRANCH
-}
-
 function clion() {
   DIR=${1:-"."} 
   open -na "/Applications/CLion.app/" --args "${DIR}"
@@ -236,11 +207,7 @@ function cleanDoYouARPromptStatefile() {
 }
 
 function ssh() {
-    if [[ "$1" = "lnx" || "$1" = "plnx" || "$1" == "Hew" ]]; then
       TERM=xterm /usr/bin/ssh $@
-    else
-      /usr/bin/ssh $@
-    fi
 }
 
 # #http://zsh.sourceforge.net/Doc/Release/Functions.html#Special-Functions
@@ -260,7 +227,7 @@ export VIRTUAL_ENV_DISABLE_PROMPT=1
 # # For building python3 with ssl support
 # The correct openssl path is discoverable by this homebrew command
 # OPENSSL_PATH=$(brew --prefix openssl)
-OPENSSL_PATH="/usr/local/opt/openssl@1.1"
+OPENSSL_PATH="/usr/local/opt/openssl@3"
 export LDFLAGS="-L${OPENSSL_PATH}/lib"
 export CPPFLAGS="-I${OPENSSL_PATH}/include/openssl"
 export CFLAGS="-I${OPENSSL_PATH}/include/openssl"

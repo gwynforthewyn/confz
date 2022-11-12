@@ -1,3 +1,35 @@
+function gmainbranch() {
+  MAIN_BRANCH="$(git branch --list main  --format='%(refname:short)')"
+
+  if [[ -z "${MAIN_BRANCH}" ]] ; then
+    MAIN_BRANCH="$(git branch --list master  --format='%(refname:short)')"
+  fi
+
+  if [[ -z "${MAIN_BRANCH}" ]]; then
+    echo "Not sure what main branch is here. Found <${MAIN_BRANCH}>. Cowardly refusing to proceed..." >&2
+    return 1
+  fi
+
+  echo "${MAIN_BRANCH}"
+}
+
+function grebase() {
+  MAIN_BRANCH=$(gmainbranch)
+
+  git checkout ${MAIN_BRANCH}
+  git fetch --all --prune
+  git rebase --verbose upstream/${MAIN_BRANCH}
+}
+
+function gupdate() {
+  MAIN_BRANCH=$(gmainbranch)
+
+  CURRENT_BRANCH="$(gbranch)"
+
+  grebase ${MAIN_BRANCH}
+  git checkout $CURRENT_BRANCH
+  git rebase $MAIN_BRANCH
+}
 
 # Functionality:
 # This function accepts a string of the form `repo:branch`
