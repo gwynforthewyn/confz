@@ -218,8 +218,8 @@ chpwd_functions+=(activatepypath
 # Ensure that the rprompt statefile  is removed at the end of each shell session.
 zshexit_functions+=(cleanDoYouARPromptStatefile)
 
-RPROMPT="\$(doYouARPrompt)"
-PROMPT="; "
+
+PROMPT="%F{5f00d7};%f \$(doYouARPrompt) "
 
 
 export VIRTUAL_ENV_DISABLE_PROMPT=1
