@@ -1,6 +1,5 @@
 # zmodload zsh/zprof
 source ${HOME/.zshrc_env_vars}
-source ${HOME}/.zshrc_machine_specific
 
 setopt prompt_subst
 
@@ -11,8 +10,9 @@ export VISUAL=${EDITOR}
 export GROOVY_HOME=/usr/local/opt/groovy/libexec
 
 export DEV="${HOME}/Developer"
-export GOPATH="${HOME}/Developer/go"
-export PATH=$PATH:${GOPATH}/bin
+# Not sure about commenting out gopath...
+export GOPATH="${HOME}/go"
+export PATH=$PATH:${HOME}/go/bin
 export SOURCE="${HOME}/Source"
 
 #Share history across multiple terminals.
@@ -51,6 +51,9 @@ if type brew &>/dev/null; then
   autoload -Uz compinit
   compinit
 fi
+
+# This sources kubectl completion, which requires compinit
+source <(kubectl completion zsh)
 
 function bashdebug() {
   echo "trap '(read -p "[$BASH_SOURCE:$LINENO] $BASH_COMMAND")' DEBUG"
@@ -154,6 +157,12 @@ function pycharm() {
   open -na "/Applications/PyCharm.app/"  --args "${DIR}"
 }
 
+function webstorm() {
+  DIR=${1:-"."}
+
+  open -na "/Applications/WebStorm.app/"  --args "${DIR}"
+}
+
 function wireshark() {
   FILE=${1}
 
@@ -175,6 +184,8 @@ alias gdso='git diff --no-ext-diff'
 alias gdsoc='git diff --no-ext-diff --cached'
 alias gpo='git push origin'
 
+alias k="kubectl"
+
 alias python="python3"
 
 alias zish="subl -n ${HOME}/.zshrc"
@@ -183,23 +194,13 @@ alias history="history 1"
 
 
 function giveYouAPython() {
-    [[ -n "$VIRTUAL_ENV" ]] && echo  " 🐍 "
+    [[ -n "$VIRTUAL_ENV" ]] && echo  " 🐍"
 }
 
 
 export DO_YOU_A_RPROMPT_STATEFILE="${HOME}/.former_working_dir-${$}"
 function doYouARPrompt() {
-  if [[ ! -f "${DO_YOU_A_RPROMPT_STATEFILE}" ]]; then
-    echo "%F{cyan}$(getpwdname)%f$(activatepypath)$(giveYouAPython)"
-  else
-    if [[ "$(cat ${DO_YOU_A_RPROMPT_STATEFILE})" != "${PWD}" ]]; then
-      echo "%F{cyan}$(getpwdname)%f$(activatepypath)$(giveYouAPython)"
-    else
-      echo ' '
-    fi
-  fi
-
-  echo -e "${PWD}" > "${DO_YOU_A_RPROMPT_STATEFILE}"
+    echo "$(kubectl config current-context) %F{cyan}$(getpwdname)%f$(giveYouAPython) %F{red}$(git rev-parse --abbrev-ref HEAD 2> /dev/null)%f"
 }
 
 function cleanDoYouARPromptStatefile() {
@@ -219,7 +220,7 @@ chpwd_functions+=(activatepypath
 zshexit_functions+=(cleanDoYouARPromptStatefile)
 
 
-PROMPT="%F{5f00d7};%f \$(doYouARPrompt) "
+PROMPT=" \$(doYouARPrompt)%F{5f00d7} ; %f"
 
 
 export VIRTUAL_ENV_DISABLE_PROMPT=1
