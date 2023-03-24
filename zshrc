@@ -1,5 +1,6 @@
 # zmodload zsh/zprof
 source ${HOME/.zshrc_env_vars}
+bindkey \^U backward-kill-line #modify ctrl-u to delete from the cursor backwards
 
 setopt prompt_subst
 
