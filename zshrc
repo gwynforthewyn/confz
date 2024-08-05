@@ -46,11 +46,18 @@ else
   ssh-add -K > /dev/null 2>&1
 fi
 
+# Allows autocomplete stuff to succeed
+# https://zsh.sourceforge.io/Doc/Release/Completion-System.html#Use-of-compinit
 if type brew &>/dev/null; then
-  FPATH=/usr/local/share/zsh-completions:$FPATH
+  # FPATH=/usr/local/share/zsh-completions:$FPATH
+  FPATH=/usr/local/share/zsh/site-functions:$FPATH
 
   autoload -Uz compinit
-  compinit
+  if [[ ! -f ${HOME}/.zcompdump ]]; then
+	  compinit -D 
+  fi
+
+  compinit -d ${HOME}/.zcompdump
 fi
 
 # This sources kubectl completion, which requires compinit
