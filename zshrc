@@ -46,22 +46,22 @@ else
   ssh-add -K > /dev/null 2>&1
 fi
 
+autoload -Uz compinit 
+if [[ -n ${ZDOTDIR}/.zcompdump(#qN.mh+24) ]]; then
+	compinit;
+else
+	compinit -C;
+fi;
+
 # Allows autocomplete stuff to succeed
 # https://zsh.sourceforge.io/Doc/Release/Completion-System.html#Use-of-compinit
 if type brew &>/dev/null; then
   # FPATH=/usr/local/share/zsh-completions:$FPATH
   FPATH=/usr/local/share/zsh/site-functions:$FPATH
-
-  autoload -Uz compinit
-  if [[ ! -f ${HOME}/.zcompdump ]]; then
-	  compinit -D 
-  fi
-
-  compinit -d ${HOME}/.zcompdump
 fi
 
 # This sources kubectl completion, which requires compinit
-source <(kubectl completion zsh)
+source <(command kubectl completion zsh)
 
 function bashdebug() {
   echo "trap '(read -p "[$BASH_SOURCE:$LINENO] $BASH_COMMAND")' DEBUG"
