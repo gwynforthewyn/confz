@@ -1,11 +1,14 @@
 # zmodload zsh/zprof
+
+HOMEBREW_NO_INSTALL_FROM_API=1
+
 source ${HOME/.zshrc_env_vars}
 bindkey \^U backward-kill-line #modify ctrl-u to delete from the cursor backwards
 
 setopt prompt_subst
 
 export PATH=/usr/local/bin:$PATH:$HOME/bin
-export EDITOR=vi
+export EDITOR=nvim
 export VISUAL=${EDITOR}
 
 export GROOVY_HOME=/usr/local/opt/groovy/libexec
@@ -13,7 +16,7 @@ export GROOVY_HOME=/usr/local/opt/groovy/libexec
 export DEV="${HOME}/Developer"
 # Not sure about commenting out gopath...
 export GOPATH="${HOME}/go"
-export PATH=$PATH:${HOME}/go/bin
+export PATH=${HOME}/go/bin:${PATH}
 export SOURCE="${HOME}/Source"
 
 #Share history across multiple terminals.
@@ -26,6 +29,12 @@ set +o inc_append_history # Apparently this should be off if share_history is tu
 set -o emacs
 
 export PATH="/Applications/Sublime Text.app/Contents/SharedSupport/bin:$PATH"
+
+# Dangerous stuff from homebrew for ruby
+export PATH="/usr/local/opt/ruby/bin:$PATH"
+export LDFLAGS="-L/usr/local/opt/ruby/lib"
+export CPPFLAGS="-I/usr/local/opt/ruby/include"
+export PKG_CONFIG_PATH="/usr/local/opt/ruby/lib/pkgconfig"
 
 # From https://docs.docker.com/engine/reference/commandline/cli/
 # this hides the old style "docker stop" commands and forces me to
@@ -67,10 +76,20 @@ function bashdebug() {
   echo "trap '(read -p "[$BASH_SOURCE:$LINENO] $BASH_COMMAND")' DEBUG"
 }
 
+
+# Custom completion function for cdd
+_cdd_complete() {
+  # Use _files to generate a list of directories in $DEV
+  _files -W "${DEV}" -/
+}
+
+# Register the custom completion function for cdd
+compdef _cdd_complete cdd
+
 function cdd() {
   DEST=$1
 
-  cd "${DEV}/${DEST}"
+  cd "${DEV}/${DEST}/"
 }
 
 function cds() {
@@ -165,6 +184,12 @@ function pycharm() {
   open -na "/Applications/PyCharm.app/"  --args "${DIR}"
 }
 
+function rubymine() {
+  DIR=${1:-"."}
+
+  open -na "/Applications/RubyMine.app/"  --args "${DIR}"
+}
+
 function webstorm() {
   DIR=${1:-"."}
 
@@ -184,13 +209,44 @@ function wireshark() {
   open -na "/Applications/Wireshark.app/" --args "${FILE}"
 }
 
+function particle() {
+  TITLE=${1}
+  DIRECTORY=${2}
+
+  if [[ -z "${TITLE}" || -z "${DIRECTORY}" ]]; then
+    echo "You missed providing a TITLE or DIRECTORY to this function" >&2
+    echo "Usage: particle TITLE OUTPUTDIRECTORY" >&2
+    return 1
+  fi
+
+  if [[ ! -d "${DIRECTORY}" ]]; then
+    echo "Your directory <${DIRECTORY}> does not exist." >&2
+    echo "Usage: particle TITLE OUTPUTDIRECTORY" >&2
+    return 1
+  fi
+
+  OUTPUTFILE=$(echo "${TITLE}" | tr " " "-" | tr "[:upper:]" "[:lower:]").html
+  TARGET="${DIRECTORY}/${OUTPUTFILE}"
+  if [[ -f "${TARGET}" ]]; then
+    echo "File <${TARGET}> already exists. Refusing to overwrite" >&2
+    return 1
+  fi
+
+  templ webpages/article | templ TITLE="${TITLE}" DATE="$(date +"%Y-%m-%d %H:%M:%S")" > "${TARGET}"
+}
+
 alias cds='cd ${SOURCE}'
+alias dec='pbpaste | base64 -d'
+alias docdate="date +%Y-%m-%d"
 alias subl="subl -n"
 alias gdc='git diff --cached'
 alias gdsc='git diff --sort=committerdate | tail -n 5'
 alias gdso='git diff --no-ext-diff'
 alias gdsoc='git diff --no-ext-diff --cached'
 alias gpo='git push origin'
+alias gpu='git push upstream'
+
+alias vi="nvim"
 
 alias k="kubectl"
 
@@ -206,13 +262,8 @@ function giveYouAPython() {
 }
 
 
-export DO_YOU_A_RPROMPT_STATEFILE="${HOME}/.former_working_dir-${$}"
 function doYouARPrompt() {
-    echo "$(kubectl config current-context) %F{cyan}$(getpwdname)%f$(giveYouAPython) %F{red}$(git rev-parse --abbrev-ref HEAD 2> /dev/null)%f"
-}
-
-function cleanDoYouARPromptStatefile() {
-  rm $DO_YOU_A_RPROMPT_STATEFILE
+    echo "%F{cyan}$(getpwdname)%f$(giveYouAPython) %F{red}$(git rev-parse --abbrev-ref HEAD 2> /dev/null)%f"
 }
 
 function ssh() {
@@ -223,10 +274,6 @@ function ssh() {
 # #chpwd is a special function
 chpwd_functions+=(activatepypath
                   )
-
-# Ensure that the rprompt statefile  is removed at the end of each shell session.
-zshexit_functions+=(cleanDoYouARPromptStatefile)
-
 
 PROMPT=" \$(doYouARPrompt)%F{5f00d7} ; %f"
 
@@ -243,3 +290,6 @@ export CFLAGS="-I${OPENSSL_PATH}/include/openssl"
 export PATH="${OPENSSL_PATH}/bin:$PATH"
 
 # zprof
+export PATH="/usr/local/sbin:$PATH"
+
+[ -f "/Users/gwyn/.ghcup/env" ] && source "/Users/gwyn/.ghcup/env" # ghcup-env
